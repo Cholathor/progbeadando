@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
         {"BG", QColor(Qt::cyan)},
         {"RGB", QColor(Qt::white)}
     };
+
 }
 
 MainWindow::~MainWindow()
@@ -75,14 +76,14 @@ void MainWindow::draw_fogyaszto(int a, int b, Fogyaszto f)
         i++;
     }
 
-
+    ui->gridLayout->removeItem(ui->gridLayout->itemAtPosition(a, b));
     ui->gridLayout->addLayout(g, a, b);
 
-    qDebug() << g->rowCount();
 }
 
 void MainWindow::on_pushButton_clicked()
 {
+
    refresh();
 }
 
@@ -142,19 +143,14 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-//    Mezo m = Mezo(10, 10, 5, "");
-//    m.sink.vart_szin_hozzaad({"R", 10});
-//    m.sink.vart_szin_hozzaad({"RG", 15});
-//    m.sink.vart_szin_hozzaad({"B", 30});
-//    mezok[10][10] = m;
-//    refresh();
-    qDebug() << ui->gridLayout->rowCount();
-    clear_grid();
-    qDebug() << ui->gridLayout->rowCount();
-}
+    Mezo m = Mezo(10, 10, 5, "");
+    m.sink.vart_szin_hozzaad({"R", 10});
+    m.sink.vart_szin_hozzaad({"RG", 15});
+    m.sink.vart_szin_hozzaad({"B", 30});
+    m.sink.vart_szin_hozzaad({"RGB", 20});
 
-void MainWindow::clear_grid()
-{
-    ui->gridLayout = new QGridLayout();
+    mezok[10][10] = m;
+    refresh();
+
 }
 

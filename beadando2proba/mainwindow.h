@@ -7,7 +7,7 @@
 #include <QLabel>
 #include <map>
 #include <set>
-
+#include <QGridLayout>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -109,6 +109,6 @@ private:
     void refresh();
     void draw_arrow(int a, int b, QString filename, int field_size);
     void draw_fogyaszto(int a, int b, Fogyaszto f);
-    void clear_grid();
+
 };
 #endif // MAINWINDOW_H
