@@ -17,10 +17,12 @@ public:
 
     int irany;
     QString szin;
+    QString kovetkezo_szinek;
     int x, y;
     Futoszalag()
     {
         irany = 0;
+        kovetkezo_szinek = "";
     }
 
     Futoszalag(int i, int x_, int y_, QString s)
@@ -31,9 +33,17 @@ public:
         szin = s;
     }
 
-    void szin_megkap(QString s)
+    void szin_megkap(QString s2)
+    {       
+        kovetkezo_szinek += s2;
+    }
+    void keveredes()
     {
-        szin = s;
+        QString uj = "";
+        if(kovetkezo_szinek.contains("R")){ uj += "R";}
+        if(kovetkezo_szinek.contains("G")){ uj += "G";}
+        if(kovetkezo_szinek.contains("B")){ uj += "B";}
+        szin = uj;
     }
 };
 
@@ -159,6 +169,7 @@ private slots:
 
     void on_pushButton_4_clicked();
 
+
 private:
     Ui::MainWindow *ui;
     QVector<QVector<Mezo>> mezok;
@@ -175,6 +186,9 @@ private:
     void draw_fogyaszto(int a, int b, Fogyaszto f);
     void termelo_atad();
     void draw_termelo(int a, int b, Termelo t);
+    void folyamat_1();
+    void folyamat_2();
+    void folyamat_3();
 
 };
 #endif // MAINWINDOW_H

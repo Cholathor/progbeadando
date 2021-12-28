@@ -74,7 +74,7 @@ void MainWindow::refresh()
 void MainWindow::draw_termelo(int a, int b, Termelo t)
 {
     QLabel *k = new QLabel();
-    QString filename = "C:/Datafiles/progbeadandokepek/futoszalag" + QString::number(t.irany) + ".png";
+    QString filename = "C:/Users/borcs/OneDrive/Dokumentumok/Egyetem 2021_2022/Prog2/progbeadando-main/progbeadando-main/beadando2proba/futoszalag" + QString::number(t.irany) + ".png";
 
     ui->gridLayout->addWidget(k, a, b);
     QPixmap m(1, 1);
@@ -85,6 +85,63 @@ void MainWindow::draw_termelo(int a, int b, Termelo t)
     painter->end();
 
     k->setPixmap(m.scaled(40, 40));
+}
+
+void MainWindow::folyamat_1()
+{
+    for(int i = 0; i < osszes_fogyaszto.size();i++){
+        if(osszes_fogyaszto[i].osszes_szin[osszes_fogyaszto[i].szin] > 0)
+        {
+            osszes_fogyaszto[i].osszes_szin[osszes_fogyaszto[i].szin]--;
+        }
+        osszes_fogyaszto[i].szin = "";
+        mezok[osszes_fogyaszto[i].y][osszes_fogyaszto[i].x].sink = osszes_fogyaszto[i];
+    }
+    refresh();
+}
+
+void MainWindow::folyamat_2()
+{
+    for(int j =0; j < osszes_futoszalag.size(); j++){
+        if(osszes_futoszalag[j].irany == 1){
+            mezok[osszes_futoszalag[j].y-1][osszes_futoszalag[j].x].belt.szin_megkap(osszes_futoszalag[j].szin);
+            mezok[osszes_futoszalag[j].y][osszes_futoszalag[j].x].belt.szin = "";
+        }
+        if(osszes_futoszalag[j].irany == 2){
+            mezok[osszes_futoszalag[j].y][osszes_futoszalag[j].x-1].belt.szin_megkap(osszes_futoszalag[j].szin);
+            mezok[osszes_futoszalag[j].y][osszes_futoszalag[j].x].belt.szin = "";
+        }
+        if(osszes_futoszalag[j].irany == 3){
+            mezok[osszes_futoszalag[j].y+1][osszes_futoszalag[j].x].belt.szin_megkap(osszes_futoszalag[j].szin);
+            mezok[osszes_futoszalag[j].y][osszes_futoszalag[j].x].belt.szin = "";
+        }
+        if(osszes_futoszalag[j].irany == 4){
+            mezok[osszes_futoszalag[j].y][osszes_futoszalag[j].x+1].belt.szin_megkap(osszes_futoszalag[j].szin);
+            mezok[osszes_futoszalag[j].y][osszes_futoszalag[j].x].belt.szin = "";
+        }
+
+    }
+    osszes_futoszalag = QVector<Futoszalag>();
+    for(int i = 0; i < mezok.size(); i++)
+    {
+        for(int j = 0; j < mezok[i].size(); j++)
+        {
+            if(mezok[i][j].get_id() == 1 || mezok[i][j].get_id() == 2 || mezok[i][j].get_id() == 3 || mezok[i][j].get_id() == 4)
+            {
+                osszes_futoszalag.push_back(mezok[i][j].belt);
+            }
+        }
+    }
+    refresh();
+}
+
+void MainWindow::folyamat_3()
+{
+    for(int i = 0; i < osszes_futoszalag.size(); i++){
+        osszes_futoszalag[i].keveredes();
+        mezok[osszes_futoszalag[i].y][osszes_futoszalag[i].x].belt = osszes_futoszalag[i];
+    }
+    refresh();
 }
 
 void MainWindow::draw_arrow(int a, int b, QString filename, int field_size, QString szin)
@@ -171,7 +228,7 @@ void MainWindow::shortest_path(int y1, int x1, int y2, int x2)
         uj_id = 4;
     }
 
-    QString filename = "C:/Datafiles/progbeadandokepek/futoszalag" + QString::number(uj_id) + ".png";
+    QString filename = "C:/Users/borcs/OneDrive/Dokumentumok/Egyetem 2021_2022/Prog2/progbeadando-main/progbeadando-main/beadando2proba/futoszalag" + QString::number(uj_id) + ".png";
     mezok[y1][x1].clicked(filename, uj_id);
 //    mezok[y1][x1].belt.szin = "RGB";
     if (uj_x == x2 && uj_y == y2) return;
@@ -221,10 +278,10 @@ void MainWindow::termelo_atad()
             int x = osszes_termelo[i].x;
             int y = osszes_termelo[i].y;
 
-            if (osszes_termelo[i].irany == 1) y-1;
-            if (osszes_termelo[i].irany == 2) x-1;
-            if (osszes_termelo[i].irany == 3) y+1;
-            if (osszes_termelo[i].irany == 4) x+1;
+            if (osszes_termelo[i].irany == 1) y--;
+            if (osszes_termelo[i].irany == 2) x--;
+            if (osszes_termelo[i].irany == 3) y++;
+            if (osszes_termelo[i].irany == 4) x++;
 
             mezok[y][x].belt.szin_megkap(osszes_termelo[i].szin);
         }
