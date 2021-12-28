@@ -11,14 +11,72 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+class Futoszalag
+{
+public:
+
+    int irany;
+    QString szin;
+    int x, y;
+    Futoszalag()
+    {
+        irany = 0;
+    }
+
+    Futoszalag(int i, int x_, int y_, QString s)
+    {
+        irany = i;
+        x = x_;
+        y = y_;
+        szin = s;
+    }
+
+    void szin_megkap(QString s)
+    {
+        szin = s;
+    }
+};
+
+class Termelo
+{
+public:
+
+    int sebesseg;
+    int x, y;
+    int irany;
+    QString szin;
+
+    Termelo()
+    {
+        irany = 0;
+    }
+    Termelo(int s, int i, QString sz, int xx, int yy)
+    {
+        sebesseg = s;
+        irany = i;
+        szin = sz;
+        int x = xx;
+        int y = yy;
+    }
+};
+
 class Fogyaszto
 {
 public:
     std::map<QString, int> osszes_szin;
 
-    Fogyaszto(std::map<QString, int> osszes)
+    int x,y;
+    QString szin;
+    Fogyaszto()
+    {
+        osszes_szin = std::map<QString, int>();
+    }
+
+    Fogyaszto(std::map<QString, int> osszes, int xx, int yy)
     {
         osszes_szin = osszes;
+        x = xx;
+        y = yy;
     }
 
     void vart_szin_hozzaad(std::pair<QString, int> uj_szin)
@@ -37,10 +95,6 @@ public:
         }
     }
 
-    Fogyaszto()
-    {
-        osszes_szin = std::map<QString, int>();
-    }
 };
 
 class Mezo
@@ -49,7 +103,11 @@ class Mezo
     QString kep;
     int id;
 public:
+    QString szin;
     Fogyaszto sink;
+    Termelo source;
+    Futoszalag belt;
+
 
     Mezo(int x_, int y_, int id_, QString kep_)
     {
@@ -61,8 +119,8 @@ public:
     }
     Mezo()
     {
-        sink = Fogyaszto();
         id = 0;
+        szin = "";
     }
 
     QString get_image()
@@ -99,16 +157,24 @@ private slots:
 
     void on_pushButton_3_clicked();
 
+    void on_pushButton_4_clicked();
+
 private:
     Ui::MainWindow *ui;
     QVector<QVector<Mezo>> mezok;
+    QVector<Termelo> osszes_termelo;
+    QVector<Fogyaszto> osszes_fogyaszto;
+    QVector<Futoszalag> osszes_futoszalag;
+
     int size;
     std::map<QString, QColor> szinek;
 
     void shortest_path(int x1, int y1, int x2, int y2);
     void refresh();
-    void draw_arrow(int a, int b, QString filename, int field_size);
+    void draw_arrow(int a, int b, QString filename, int field_size, QString szin);
     void draw_fogyaszto(int a, int b, Fogyaszto f);
+    void termelo_atad();
+    void draw_termelo(int a, int b, Termelo t);
 
 };
 #endif // MAINWINDOW_H

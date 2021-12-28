@@ -82,9 +82,16 @@
      <layout class="QGridLayout" name="gridLayout_1"/>
     </item>
     <item>
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="text">
+       <string>termelo</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="pushButton">
       <property name="text">
-       <string>PushButton</string>
+       <string>grid</string>
       </property>
      </widget>
     </item>
@@ -94,14 +101,14 @@
     <item>
      <widget class="QPushButton" name="pushButton_3">
       <property name="text">
-       <string>PushButton</string>
+       <string>fogyaszto</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="pushButton_2">
       <property name="text">
-       <string>PushButton</string>
+       <string>futoszalag</string>
       </property>
      </widget>
     </item>
