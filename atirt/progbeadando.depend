@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1641079388 source:c:\users\kmarton\documents\codeblocks\progbeadando\src\mezo.cpp
+	"Mezo.h"
+
+1641080401 c:\users\kmarton\documents\codeblocks\progbeadando\include\mezo.h
+	<string>
+	"main.cpp"
+
+1641079544 source:c:\users\kmarton\documents\codeblocks\progbeadando\main.cpp
+	<iostream>
+	<vector>
+	"Mezo.h"
+
