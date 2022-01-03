@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <set>
 
 using namespace std;
 map<string, string> szinek = {
@@ -162,6 +163,62 @@ struct Futoszalag:Mezo
 
 };
 
+struct Tile
+{
+    int x, y, helyezes;
+    int g, h, f;
+
+    Tile()
+    {
+        x = 0;
+        y = 0;
+        f = 0;
+        g = 0;
+        h = 0;
+    }
+
+    Tile(int xx, int yy)
+    {
+        Tile();
+        x = xx;
+        y = yy;
+        helyezes = 0;
+    }
+    void calculate(int celx, int cely, Tile szomszed)
+    {
+        h = abs(x-celx) + abs(y-cely);
+        g = szomszed.g+1;
+        f = h + g;
+        if (helyezes == 0)
+            helyezes = szomszed.helyezes + 1;
+    }
+
+    int irany(Tile t)
+    {
+        if (t.x == x && t.y-1 == y) return 3;
+        if (t.x == x && t.y+1 == y) return 1;
+        if (t.x-1 == x && t.y == y) return 4;
+        if (t.x+1 == x && t.y == y) return 2;
+        return 1;
+    }
+
+};
+
+bool operator< (const Tile t1, const Tile t2)
+{
+    if (t1.f < t2.f) return true;
+    else if (t1.f == t2.f && t1.helyezes != t2.helyezes) return t1.helyezes > t2.helyezes;
+    else if (t1.f == t2.f && t1.x != t2.x) return t1.x < t2.x;
+    else if (t1.f == t2.f) return t1.y < t2.y;
+    else return false;
+}
+
+//bool operator== (const Tile t1, const Tile t2)
+//{
+//    return (t1.x == t2.x && t1.y == t2.y);
+//}
+
+
 
 class Kezelo
 {
@@ -171,6 +228,7 @@ public:
     map<pair<int, int>, Termelo> osszes_termelo;
     map<pair<int, int>, Fogyaszto> osszes_fogyaszto;
     map<pair<int, int>, Futoszalag> osszes_futoszalag;
+    vector<vector<Tile>> tiles;
 
     Kezelo()
     {
@@ -341,54 +399,147 @@ public:
 
         }
     }
+
+    void utkeres(int startx, int starty, int celx, int cely)
+    {
+        set<Tile> open;
+        set<Tile> closed_set;
+        vector<Tile> closed_vec;
+
+
+        Tile start(startx, starty);
+        start.helyezes = 0;
+
+        open.insert(start);
+
+        tiles = vector<vector<Tile>>();
+        for (int i = 0; i < SIZE; i++)
+        {
+            vector<Tile> uj;
+            for (int j = 0; j < SIZE; j++)
+            {
+                Tile t(j, i);
+                uj.push_back(t);
+            }
+            tiles.push_back(uj);
+        }
+        int sorrend = 0;
+        while (!(open.begin()->x == celx && open.begin()->y == cely) )
+        {
+            Tile current = *(open.begin());
+            open.erase(open.begin());
+            current.helyezes = sorrend;
+//            current.calculate();
+            closed_set.insert(current);
+            closed_vec.push_back(current);
+
+            for (Tile neighbour: szomszedok(current))
+            {
+                int cost = current.g + 1;
+                neighbour.calculate(celx, cely, current);
+
+                if (open.count(neighbour) && cost < neighbour.g)
+                {
+                    open.erase(open.find(neighbour));
+                }
+
+                if (!open.count(neighbour) && !closed_set.count(Tile(neighbour.x, neighbour.y)))
+                {
+                    open.insert(neighbour);
+                }
+            }
+            sorrend++;
+            if (open.begin()->x == celx && open.begin()->y == cely)
+            {
+                closed_set.insert(*(open.begin()));
+                closed_vec.push_back(*(open.begin()));
+            }
+        }
+
+        for (int i = 0; i < closed_vec.size()-1; i++)
+        {
+            futoszalag_letrehoz(closed_vec[i].x, closed_vec[i].y, closed_vec[i].irany(closed_vec[i+1]));
+        }
+    }
+
+    vector<Tile> szomszedok(Tile t)
+    {
+        vector<Tile> result;
+
+        if (t.x > 0 && valid(Tile(t.x-1, t.y))) result.push_back(tiles[t.y][t.x-1]);
+        if (t.x < SIZE-1 && valid(Tile(t.x+1, t.y))) result.push_back(tiles[t.y][t.x+1]);
+
+        if (t.y > 0 && valid(Tile(t.x, t.y-1))) result.push_back(tiles[t.y-1][t.x]);
+        if (t.y < SIZE-1 && valid(Tile(t.x, t.y+1))) result.push_back(tiles[t.y+1][t.x]);
+
+        return result;
+    }
+    bool valid(Tile t)
+    {
+        if (mezok[t.y][t.x].get_id() == 5 && osszes_fogyaszto.count({t.x, t.y}) && osszes_fogyaszto[{t.x, t.y}].osszes_szin.size() == 0)
+        return false;
+        if (osszes_futoszalag.count({t.x, t.y})) return false;
+        return true;
+    }
 };
+
+
 
 int main()
 {
 
+
+
     Kezelo K;
 
-
-    K.termelo_letrehoz(4, 5, 1, "R");
-//    K.termelo_letrehoz(4, 3, 4, "G");
-//    K.termelo_letrehoz(5, 4, 4, "B");
-//    K.termelo_letrehoz(6, 7, 1, "R");
-
-    K.fogyaszto_letrehoz(2, 0, "R", 3, "B", 5);
-    K.fogyaszto_letrehoz(7, 7, "R", 3, "B", 5);
-
-    K.futoszalag_letrehoz(4, 5, 1);
-    K.futoszalag_letrehoz(4, 3, 3);
-    K.futoszalag_letrehoz(5, 4, 2);
-    K.futoszalag_letrehoz(6, 7, 4);
-    K.futoszalag_letrehoz(2, 1, 1);
-    K.futoszalag_letrehoz(2, 2, 1);
-    K.futoszalag_letrehoz(2, 3, 1);
-    K.futoszalag_letrehoz(2, 4, 1);
-    K.futoszalag_letrehoz(3, 4, 2);
-    K.futoszalag_letrehoz(4, 4, 2);
-
-
+    K.utkeres(2, 3, 8, 3);
     K.megjelenit();
 
-    cout << endl;
-    for (int i = 0; i < 10; i++)
-    {
+    cout << "----" << endl;
 
-
-
-
-        K.folyamat_1();
-
-        K.folyamat_2();
-
-        K.folyamat_3();
-
-        K.folyamat_4(i);
-
-
+    K.utkeres(2, 2, 8, 2);
     K.megjelenit();
-    }
+
+//    K.termelo_letrehoz(4, 5, 1, "R");
+////    K.termelo_letrehoz(4, 3, 4, "G");
+////    K.termelo_letrehoz(5, 4, 4, "B");
+////    K.termelo_letrehoz(6, 7, 1, "R");
+//
+//    K.fogyaszto_letrehoz(2, 0, "R", 3, "B", 5);
+//    K.fogyaszto_letrehoz(7, 7, "R", 3, "B", 5);
+//
+//    K.futoszalag_letrehoz(4, 5, 1);
+//    K.futoszalag_letrehoz(4, 3, 3);
+//    K.futoszalag_letrehoz(5, 4, 2);
+//    K.futoszalag_letrehoz(6, 7, 4);
+//    K.futoszalag_letrehoz(2, 1, 1);
+//    K.futoszalag_letrehoz(2, 2, 1);
+//    K.futoszalag_letrehoz(2, 3, 1);
+//    K.futoszalag_letrehoz(2, 4, 1);
+//    K.futoszalag_letrehoz(3, 4, 2);
+//    K.futoszalag_letrehoz(4, 4, 2);
+//
+//
+//    K.megjelenit();
+//
+//    cout << endl;
+//    for (int i = 0; i < 10; i++)
+//    {
+//
+//
+//
+//
+//        K.folyamat_1();
+//
+//        K.folyamat_2();
+//
+//        K.folyamat_3();
+//
+//        K.folyamat_4(i);
+//
+//
+//    K.megjelenit();
+//    }
 
 
     return 0;
