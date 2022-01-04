@@ -570,6 +570,7 @@ public:
     }
 
 
+
     void kereses()
     {
         /// Minden termelo sebessege 1 eset, nincs szinkeveres
@@ -582,8 +583,8 @@ public:
         }
 
         map<string, vector<Termelo>> termelo_map;
-        vector<pair<Termelo, Fogyaszto>> parok;
 
+        vector< vector<pair<Termelo, Fogyaszto>>> parok_vektora;
 
         for (map<pair<int, int>, Termelo>::iterator it = osszes_termelo.begin(); it!=osszes_termelo.end(); it++)
             termelo_map[it->second.termelt_szin].push_back(it->second);
@@ -615,64 +616,23 @@ public:
 
                 for(auto szin:termelo_map)
                 {
-//                Fogyaszto f = it->second;
-//                map<string, int> m = f.osszes_szin;
-//                for(auto p: m)
-//                    {
-//                        cout<< p.first << " : " << p.second<<endl;
-//                    }
-                    if ( it->second.osszes_szin[szin.first]!=0 )
-                    {
-                        int min_tav=2000;
-                        int index = 0;
-                        for(int j=0; j<szin.second.size(); j++)
+                    vector<pair<Termelo, Fogyaszto>> parok;
+                    if ( it->second.osszes_szin[szin.first]!=0 ){
+                        for (int j=0; j<szin.second.size(); j++)
                         {
-
-                            int tavolsag = abs(it->second.x - szin.second[j].x) + abs(it->second.y - szin.second[j].y);
-                            if (tavolsag< min_tav)
-                            {
-                                min_tav = tavolsag;
-                                index = j;
-                            }
+                            parok.push_back({szin.second[j],it->second});
                         }
-                        parok.push_back({szin.second[index],it->second});
+
                     }
+                    parok_vektora.push_back(parok);
                 }
             }
-//            cout<< parok.size()<< endl;
-//            for(int k = 0; k < parok.size(); k++)
-//                {
-//                    cout<< parok[k].first.x << "," << parok[k].first.y << ":" <<parok[k].second.x <<","<< parok[k].second.y <<endl;
-//                }
-            int min_tavolsag=20000;
-            int tav;
-            int idx = 0;
-            for (int i = 0; i<parok.size(); i++)
-            {
-
-                tav = abs(parok[i].first.x-parok[i].second.x)+ abs(parok[i].first.y-parok[i].second.y);
-                if(tav < min_tavolsag)
-                {
-                    min_tavolsag = tav;
-                    idx = i;
+            for (int i=0; i<parok_vektora.size(); i++){
+                for (int j=0; j< parok_vektora[i].size(); j++){
+                    
                 }
             }
 
-            vector<pair<int, int>> path = aStar(mezok, parok[idx].first, parok[idx].second);
-            addPathToGrid(mezok, path);
-
-            for (int i = 0; i<parok.size(); i++)
-            {
-                if(i != idx)
-                {
-                    vector<pair<int, int>> path = aStar(mezok, parok[i].first, parok[i].second);
-                    addPathToGrid(mezok, path);
-
-                    if (path.size() == 0)
-                        cout << "Nem lehet összekötni a forrást és a fogyasztót. 😕'(\n"<<endl;
-
-                }
-            }
         }
         /// minden sebesseg 1 de van keveres
         else if(minden_sebesseg_1 && !nincs_keveres)
@@ -782,24 +742,30 @@ int main()
 {
 
     Kezelo K;
-/// Masodik proba pelda, erre mukodik
-//    K.termelo_letrehoz(1, 5, 1, "R");
-//
-//    K.termelo_letrehoz(3, 5, 1, "B");
-//
-//    K.termelo_letrehoz(5, 5, 1, "G");
-//
-//    K.termelo_letrehoz(7, 5, 1, "R");
-//
-//
-//    K.fogyaszto_letrehoz(2, 1, "R", 4, "B", 14, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
-//    K.fogyaszto_letrehoz(6, 8, "R", 4, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
 
-/// Egyszeru szinkeveres, harmadik pelda
-    K.termelo_letrehoz(2, 5, 1, "G");
-    K.termelo_letrehoz(8, 3, 1, "R");
-    K.termelo_letrehoz(4, 8, 1, "B");
-    K.fogyaszto_letrehoz(4, 4, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 3);
+
+
+/// Masodik proba pelda, erre mukodik mostmar nem mert flugi atvaltoztatta, also ezt meg kene nezni
+    K.termelo_letrehoz(1, 4, 1, "R");
+
+    K.termelo_letrehoz(3, 4, 1, "B");
+
+    K.termelo_letrehoz(5, 4, 1, "G");
+
+    K.termelo_letrehoz(7, 4, 1, "R");
+
+
+    K.fogyaszto_letrehoz(1, 1, "R", 0, "B", 14, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+    K.fogyaszto_letrehoz(3, 1, "R", 4, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+    K.fogyaszto_letrehoz(5, 8, "R", 8, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+    K.fogyaszto_letrehoz(7, 8, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+
+
+/// Egyszeru szinkeveres, harmdik pelda
+//    K.termelo_letrehoz(2, 5, 1, "G");
+//    K.termelo_letrehoz(8, 3, 1, "R");
+//    K.termelo_letrehoz(4, 8, 1, "B");
+//    K.fogyaszto_letrehoz(4, 4, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 3);
 
     K.kereses();
     K.megjelenit();
