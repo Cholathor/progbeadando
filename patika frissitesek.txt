@@ -197,15 +197,15 @@ class Coord
         return Gcost + Hcost;
     }
 
-    int calcHcost(Fogyaszto& target)
+    int calcHcost(pair<int,int>& target)
     {
-        int tx = target.x;
-        int ty = target.y;
+        int tx = target.first;
+        int ty = target.second;
         return abs(this->x - tx) + abs(this->y - ty);
     }
 
 public:
-    Coord(int _x, int _y, const pair<int, int>& lastCoord, Fogyaszto& target, const vector<vector<Coord>>& helperGrid)
+    Coord(int _x, int _y, const pair<int, int>& lastCoord, pair<int,int>& target, const vector<vector<Coord>>& helperGrid)
     {
         this->x = _x;
         this->y = _y;
@@ -329,14 +329,14 @@ public:
             }
             cout << "\n";
         }
-
-        for (auto k: osszes_fogyaszto)
-        {
-            for (auto f: k.second.osszes_szin)
-            {
-                cout << f.first << " " << f.second << endl;
-            }
-        }
+//
+//        for (auto k: osszes_fogyaszto)
+//        {
+//            for (auto f: k.second.osszes_szin)
+//            {
+//                cout << f.first << " " << f.second << endl;
+//            }
+//        }
 
     }
 
@@ -438,14 +438,14 @@ public:
         }
     }
 
-    void addNeighbour(int x, int y, Coord lastCoord, Fogyaszto target, set<Coord>& possibleCoords, vector<vector<Coord>>& helperGrid, vector<vector<Mezo>>& grid)
+    void addNeighbour(int x, int y, Coord lastCoord, pair<int,int> target, set<Coord>& possibleCoords, vector<vector<Coord>>& helperGrid, vector<vector<Mezo>>& grid)
     {
 
         if (x < 0 || y < 0 || x >= SIZE || y >= SIZE)
             return;
         if (helperGrid[y][x].isChecked())
             return;
-        if (grid[y][x].get_id() != 0 && !(x == target.x && y == target.y))
+        if (grid[y][x].get_id() != 0 && !(x == target.first && y == target.second))
             return;
 
 
@@ -455,12 +455,12 @@ public:
     }
 
 /// astar
-    vector<pair<int, int>> aStar(vector<vector<Mezo>>& grid, Termelo source, Fogyaszto target)
+    vector<pair<int, int>> aStar(vector<vector<Mezo>>& grid, pair<int,int> source, pair<int,int> target)
     {
         vector<pair<int, int>> res;
 
-        int sx = source.x, sy = source.y;
-        int tx = target.x, ty = target.y;
+        int sx = source.first, sy = source.second;
+        int tx = target.first, ty = target.second;
 
         Coord emptyCoord(-1, -1, {-1, -1}, target, {});
         vector<Coord> row(SIZE, emptyCoord);
@@ -483,7 +483,7 @@ public:
             if (possibleCoords.empty())
                 return res;
 
-//    cout << possibleCoords.size() << " possiblecoords" << endl;
+
             set<Coord>::iterator it = possibleCoords.begin();
             actualCoord = *it;
             possibleCoords.erase(it);
@@ -513,7 +513,7 @@ public:
         }
         while(!(x == sx && y == sy));
 
-        res.push_back({source.x, source.y});
+        res.push_back({source.first, source.second});
 
         reverse(res.begin(), res.end());
 
@@ -584,11 +584,10 @@ public:
 
         map<string, vector<Termelo>> termelo_map;
 
-        vector< vector<pair<Termelo, Fogyaszto>>> parok_vektora;
+        //vector< vector<pair<Termelo, Fogyaszto>>> parok_vektora;
 
         for (map<pair<int, int>, Termelo>::iterator it = osszes_termelo.begin(); it!=osszes_termelo.end(); it++)
             termelo_map[it->second.termelt_szin].push_back(it->second);
-
         for(map<pair<int, int>, Fogyaszto>::iterator it = osszes_fogyaszto.begin(); it!=osszes_fogyaszto.end(); it++)
         {
             Fogyaszto g = it->second;
@@ -611,33 +610,78 @@ public:
         }
         if (minden_sebesseg_1 && nincs_keveres)
         {
+            vector<pair<Termelo, Fogyaszto>> parok;
             for (map<pair<int, int>, Fogyaszto>::iterator it = osszes_fogyaszto.begin(); it!=osszes_fogyaszto.end(); it++)
             {
-
-                for(auto szin:termelo_map)
-                {
-                    vector<pair<Termelo, Fogyaszto>> parok;
-                    if ( it->second.osszes_szin[szin.first]!=0 ){
-                        for (int j=0; j<szin.second.size(); j++)
-                        {
-                            parok.push_back({szin.second[j],it->second});
-                        }
-
+                for(auto ossz : it->second.osszes_szin){
+                    if(termelo_map[ossz.first].size()==1 && it->second.osszes_szin[ossz.first]!=0){
+                        parok.push_back({termelo_map[ossz.first][0], it->second});
                     }
-                    parok_vektora.push_back(parok);
                 }
             }
-            for (int i=0; i<parok_vektora.size(); i++){
-                for (int j=0; j< parok_vektora[i].size(); j++){
-                    
+
+
+
+            for (int i=0; i<parok.size(); i++)
+            {
+                    pair<int,int> s({parok[i].first.x, parok[i].first.y});
+                    pair<int,int> t({parok[i].second.x, parok[i].second.y});
+                    vector<pair<int, int>> path = aStar(mezok, s, t);
+                    addPathToGrid(mezok, path);
+
+            }
+
+            vector<pair<Termelo, Fogyaszto>> parok2;
+
+
+            for (map<pair<int, int>, Fogyaszto>::iterator it = osszes_fogyaszto.begin(); it!=osszes_fogyaszto.end(); it++)
+            {
+                bool volt_mar=false;
+                for (int i=0; i<parok.size(); i++)
+                {
+                if(parok[i].second.x == it->second.x && parok[i].second.y == it->second.y)
+                    volt_mar=true;
                 }
+
+                if(volt_mar)
+                    continue;
+
+               for (auto s: it->second.osszes_szin)
+                {
+                    if(it->second.osszes_szin[s.first]!=0)
+                    {
+                        int min_ut=2000;
+                        Termelo min_t;
+                        for(auto t:termelo_map[s.first])
+                        {
+                            vector<pair<int, int>> path = aStar(mezok, {t.x, t.y}, {it->second.x, it->second.y});
+                            if(path.size()<min_ut)
+                            {
+                                min_ut=path.size();
+                                min_t=t;
+                            }
+                        }
+                        parok2.push_back({min_t,it->second});
+                        break;
+                    }
+                }
+
+            }
+
+            for(int i=0; i<parok2.size(); i++)
+            {
+
+
+                    pair<int,int> s({parok2[i].first.x, parok2[i].first.y});
+                    pair<int,int> t({parok2[i].second.x, parok2[i].second.y});
+                    vector<pair<int, int>> path = aStar(mezok, s, t);
+                    addPathToGrid(mezok, path);
             }
 
         }
         /// minden sebesseg 1 de van keveres
         else if(minden_sebesseg_1 && !nincs_keveres)
         {
-            cout<< "itt vagyok"<<endl;
             for (map<pair<int, int>, Fogyaszto>::iterator it = osszes_fogyaszto.begin(); it!=osszes_fogyaszto.end(); it++)
             {
                 Fogyaszto g = it->second;
@@ -652,87 +696,121 @@ public:
 
                 for(int i = 0; i < milyen_szinek.size(); i++)
                 {
-
+                    vector<pair<Termelo, Fogyaszto>> aktualis_keveres;
                     vector<char> keverendo;
-                   // cout<<  milyen_szinek[i] << " ";
-                   vector<pair<Termelo, Fogyaszto>> aktualis_keveres;
+
                     for(int j= 0; j < milyen_szinek[i].length(); j++)
                     {
+
                         string s  = milyen_szinek[i];
                         if(s.length()>1)
                         {
                             char s2 = s[j];
                             keverendo.push_back(s2);
                         }
+                    }
+                    for(auto szin:termelo_map)
+                    {
 
-                        for(auto szin:termelo_map)
+                        char temp = szin.first[0];
+
+                        if(find(keverendo.begin(), keverendo.end(), temp) != keverendo.end())
                         {
-                            char temp = szin.first[0];
-                            if(find(keverendo.begin(), keverendo.end(), temp) != keverendo.end())
+                            int min_tav=2000;
+                            int index = 0;
+                            for(int j=0; j<szin.second.size(); j++)
                             {
-                                int min_tav=2000;
-                                int index = 0;
-                                for(int j=0; j<szin.second.size(); j++)
+
+                                int tavolsag = abs(it->second.x - szin.second[j].x) + abs(it->second.y - szin.second[j].y);
+                                if (tavolsag < min_tav)
                                 {
-
-                                    int tavolsag = abs(it->second.x - szin.second[j].x) + abs(it->second.y - szin.second[j].y);
-                                    if (tavolsag< min_tav)
-                                    {
-                                        min_tav = tavolsag;
-                                        index = j;
-                                    }
+                                    min_tav = tavolsag;
+                                    index = j;
                                 }
-                                aktualis_keveres.push_back({szin.second[index],it->second});
-                                //cout<<"ide meg eljutok"<< endl;
+                            }
+                            aktualis_keveres.push_back({szin.second[index],it->second});
+                        }
+                    }
 
+                    int min_tavolsag=20000;
+                    int tav;
+                    int idx = 0;
+                    for (int k = 0; k<aktualis_keveres.size(); k++)
+                    {
+                        if(aktualis_keveres[k].first.x == aktualis_keveres[k].second.x || aktualis_keveres[k].first.y == aktualis_keveres[k].second.y)
+                        {
+                            idx = k;
+                            break;
+
+                        }
+                        else
+                        {
+                            tav = abs(aktualis_keveres[k].first.x-aktualis_keveres[k].second.x)+ abs(aktualis_keveres[k].first.y-aktualis_keveres[k].second.y);
+                            if(tav < min_tavolsag)
+                            {
+                                min_tavolsag = tav;
+                                idx = k;
                             }
                         }
                     }
-//                        cout<<aktualis_keveres.size()<<endl;
-            int min_tavolsag=20000;
-            int tav;
-            int idx = 0;
-            for (int i = 0; i<aktualis_keveres.size(); i++)
-            {
-                //cout<< "belep"<< endl;
-                tav = abs(aktualis_keveres[i].first.x-aktualis_keveres[i].second.x)+ abs(aktualis_keveres[i].first.y-aktualis_keveres[i].second.y);
-                if(tav < min_tavolsag)
-                {
-                    min_tavolsag = tav;
-                    idx = i;
-                }
-            }
+                    pair<int,int> s({aktualis_keveres[idx].first.x, aktualis_keveres[idx].first.y});
+                    pair<int,int> t({aktualis_keveres[idx].second.x, aktualis_keveres[idx].second.y});
+                    vector<pair<int, int>> path = aStar(mezok, s, t);
+                    addPathToGrid(mezok, path);
 
-            ///most csak azt csinalja hogy az osszekeverni valo szinek kozul a legkozelebbit a fogyasztohoz vezeti, majd ebbe az utvonalba be kene vezetni a
-            /// tobbi keverni valo szint, vagyis csomopont letrehozas
-            vector<pair<int, int>> path = aStar(mezok, aktualis_keveres[idx].first, aktualis_keveres[idx].second);
-            addPathToGrid(mezok, path);
+                    vector<pair<pair<int,int>,pair<int,int>>> parok;
+                    pair<int,int> p;
+
+                    for(int l = 0; l < aktualis_keveres.size(); l++ )
+                    {
+                        if(l != idx)
+                        {
+                            int minimum_tavolsag = 20000;
+                            int tavolsag;
+                            int index;
+                            for(int j = 1; j < path.size(); j++)
+                            {
+                                tavolsag = abs(aktualis_keveres[l].first.x-path[j].first) + abs(aktualis_keveres[l].first.y-path[j].second);
+                                if(tavolsag < minimum_tavolsag)
+                                {
+                                    minimum_tavolsag = tavolsag;
+                                    index = j;
+                                    p.first = path[j].first;
+                                    p.second = path[j].second;
+                                }
+
+                            }
+                            tavolsag = abs(aktualis_keveres[l].second.x-aktualis_keveres[l].first.x) + abs(aktualis_keveres[l].second.y-aktualis_keveres[l].first.y);
+
+                            if(tavolsag < minimum_tavolsag)
+                            {
+                                minimum_tavolsag = tavolsag;
+                                p.first = aktualis_keveres[l].second.x;
+                                p.second = aktualis_keveres[l].second.y;
+                            }
+                            parok.push_back({{aktualis_keveres[l].first.x,aktualis_keveres[l].first.y},p});
 
 
-//                for (int i = 0; i<aktualis_keveres.size(); i++)
-//                {
-//                if(i != idx)
-//                {
-//                    vector<pair<int, int>> path = aStar(mezok, aktualis_keveres[i].first, aktualis_keveres[i].second);
-//                    addPathToGrid(mezok, path);
-//
-////                    if (path.size() == 0)
-////                        cout << "Nem lehet összekötni a forrást és a fogyasztót. 😕'(\n"<<endl;
-//
-//                }
-//
-//                }
+                        }
                     }
-//                    for (int i=0; i< keverendo.size(); i++)
-//                        cout<< keverendo[i]<< "  ";
-//                    cout<<endl;
-
-               // }
-                cout << endl;
-
+//                    for( int d = 0; d < parok.size(); d++)
+//                    {
+//                        cout<< "termelo:" << parok[d].first.first << ":" << parok[d].first.second << "||" << " osszekoti vele:" << parok[d].second.first << ":" << parok[d].second.second <<endl;
+//                    }
+                    for(int k = 0; k < parok.size(); k++)
+                    {
+                        vector<pair<int, int>> path1 = aStar(mezok, parok[k].first, parok[k].second);
+                        addPathToGrid(mezok, path1);
+                    }
+                }
             }
         }
 
+        /// kulonbozo frekvenciaju, keveres nelkul
+        else if(!minden_sebesseg_1 && nincs_keveres){
+
+
+        }
     }
 
 
@@ -742,41 +820,65 @@ int main()
 {
 
     Kezelo K;
-
-
-
-/// Masodik proba pelda, erre mukodik mostmar nem mert flugi atvaltoztatta, also ezt meg kene nezni
+/// Elso alapfeladat mukodiiik
     K.termelo_letrehoz(1, 4, 1, "R");
 
     K.termelo_letrehoz(3, 4, 1, "B");
 
     K.termelo_letrehoz(5, 4, 1, "G");
 
-    K.termelo_letrehoz(7, 4, 1, "R");
-
-
-    K.fogyaszto_letrehoz(1, 1, "R", 0, "B", 14, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
-    K.fogyaszto_letrehoz(3, 1, "R", 4, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
-    K.fogyaszto_letrehoz(5, 8, "R", 8, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
-    K.fogyaszto_letrehoz(7, 8, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
-
-
-/// Egyszeru szinkeveres, harmdik pelda
-//    K.termelo_letrehoz(2, 5, 1, "G");
-//    K.termelo_letrehoz(8, 3, 1, "R");
-//    K.termelo_letrehoz(4, 8, 1, "B");
-//    K.fogyaszto_letrehoz(4, 4, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 3);
+    K.fogyaszto_letrehoz(1, 8, "R", 4, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+    K.fogyaszto_letrehoz(3, 8, "R", 0, "B", 4, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+    K.fogyaszto_letrehoz(5, 8, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
 
     K.kereses();
     K.megjelenit();
 
+
+/// Masodik proba pelda, erre mukodik!!!!
+//    K.termelo_letrehoz(1, 4, 1, "R");
+//
+//    K.termelo_letrehoz(3, 4, 1, "B");
+//
+//    K.termelo_letrehoz(5, 4, 1, "G");
+//
+//    K.termelo_letrehoz(7, 4, 1, "R");
+//
+//
+//    K.fogyaszto_letrehoz(1, 1, "R", 0, "B", 14, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+//    K.fogyaszto_letrehoz(3, 1, "R", 4, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+//    K.fogyaszto_letrehoz(5, 8, "R", 8, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+//    K.fogyaszto_letrehoz(7, 8, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+//
+//    K.kereses();
+//    K.megjelenit();
+
+/// Egyszeru szinkeveres, harmadik pelda MUKODIIIK
+//    K.termelo_letrehoz(2, 5, 1, "G");
+//    K.termelo_letrehoz(8, 3, 1, "R");
+//    K.termelo_letrehoz(4, 8, 1, "B");
+//    K.fogyaszto_letrehoz(4, 4, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 3);
+//
+//    K.kereses();
+//    K.megjelenit();
+
+/// Egyszeru szinkeveres, negyedik pelda EZ IIIIIS
+//    K.termelo_letrehoz(1, 1, 1, "R");
+//    K.termelo_letrehoz(3, 1, 1, "B");
+//    K.termelo_letrehoz(5, 1, 1, "G");
+//    K.termelo_letrehoz(7, 1, 1, "R");
+//    K.termelo_letrehoz(9, 1, 1, "B");
+//    K.fogyaszto_letrehoz(3, 8, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 1);
+//    K.fogyaszto_letrehoz(7, 6, "R", 0, "B", 0, "G", 0, "RB", 4, "RG", 0,"BG", 0,"RGB", 0);
+//    K.kereses();
+//    K.megjelenit();
+//
+
+
+
     cout << endl;
 //    for (int i = 0; i < 10; i++)
 //    {
-//
-//
-//
-//
 //        K.folyamat_1();
 //
 //        K.folyamat_2();
