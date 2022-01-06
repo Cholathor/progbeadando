@@ -340,12 +340,28 @@ public:
 
     }
 
-    void folyamat_1()
+    bool folyamat_1()
     {
         for (map<pair<int, int>, Fogyaszto>::iterator it = osszes_fogyaszto.begin(); it!=osszes_fogyaszto.end(); it++)
         {
+
             it->second.szin_bemegy(it->second.szin);
         }
+        bool minden_nulla=true;
+
+        for (map<pair<int, int>, Fogyaszto>::iterator it = osszes_fogyaszto.begin(); it!=osszes_fogyaszto.end(); it++)
+        {
+            for(auto s:it->second.osszes_szin)
+            {
+                if(s.second!= 0)
+                {
+                    minden_nulla=false;
+                    cout<<s.first<<" "<<s.second<<endl;
+                    break;
+                }
+            }
+        }
+        return minden_nulla;
 
     }
 
@@ -500,8 +516,7 @@ public:
 
         }
 
-
-//    grid[ty][tx] = object;
+       // res.push_back({source.first, source.second});
 
         do
         {
@@ -534,32 +549,21 @@ public:
         {
             if (ay < ny)
                 return Futoszalag(ax, ay, 3);
-            //  return 'V';
-//          k.futoszalag_letrehoz(ax, ay, 3);
-            //return '^';
-//        k.futoszalag_letrehoz(ax, ay, 1);
             return Futoszalag(ax, ay, 1);
         }
 
         if (ax < nx)
             return Futoszalag(ax, ay, 4);
-        //return '>';
-//        k.futoszalag_letrehoz(ax, ay, 4);
-        //return '<';
-//    k.futoszalag_letrehoz(ax, ay, 2);
 
-//   return k.mezok[ay][ax];
         return Futoszalag(ax, ay, 2);
     }
 
 
-    /* Lerakja a futószalagot a térképre
-     * grid: a térkép
-     * path: az útvonal a forrástól a fogyasztóig (a forrás és a fogyasztó is benne van)
-     */
+
     void addPathToGrid(vector<vector<Mezo>>& grid, const vector<pair<int,int>>& path)
     {
-        for (int i = 1; i < (int)path.size()-1; i++)
+        //cout<<path.size()<<endl;
+        for (int i = 0; i < (int)path.size()-1; i++)
         {
             pair<int, int> P = path[i];
             int x = P.first;
@@ -883,18 +887,18 @@ int main()
 
     Kezelo K;
 /// Elso alapfeladat mukodiiik
-//    K.termelo_letrehoz(1, 4, 1, "R");
-//
-//    K.termelo_letrehoz(3, 4, 1, "B");
-//
-//    K.termelo_letrehoz(5, 4, 1, "G");
-//
-//    K.fogyaszto_letrehoz(1, 8, "R", 4, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
-//    K.fogyaszto_letrehoz(3, 8, "R", 0, "B", 4, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
-//    K.fogyaszto_letrehoz(5, 8, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
-//
-//    K.kereses();
-//    K.megjelenit();
+    K.termelo_letrehoz(1, 4, 1, "R");
+
+    K.termelo_letrehoz(3, 4, 1, "B");
+
+    K.termelo_letrehoz(5, 4, 1, "G");
+
+    K.fogyaszto_letrehoz(1, 8, "R", 4, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+    K.fogyaszto_letrehoz(3, 8, "R", 0, "B", 4, "G", 0, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+    K.fogyaszto_letrehoz(5, 8, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0, "RGB", 0);
+
+    K.kereses();
+    K.megjelenit();
 
 
 /// Masodik proba pelda, erre mukodik!!!!
@@ -950,43 +954,47 @@ int main()
 //     K.megjelenit();
 
 /// Trivialisan lehetetlen 1
-
-    K.termelo_letrehoz(1, 1, 1, "R");
-    K.termelo_letrehoz(1, 3, 1, "B");
-    K.termelo_letrehoz(1, 4, 1, "B");
-    K.termelo_letrehoz(4, 1, 1, "G");
-    K.termelo_letrehoz(1, 1, 1, "R");
-
-    K.fogyaszto_letrehoz(1, 7, "R", 0, "B", 0, "G", 0, "RB", 4, "RG", 0,"BG", 0,"RGB", 0);
-    K.fogyaszto_letrehoz(2, 7, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
-    K.fogyaszto_letrehoz(7, 8, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 5);
-
-    if(K.check())
-        {
-        K.kereses();
-        K.megjelenit();
-        }
-        else
-        {
-            K.megjelenit();
-            cout<<"Trivialisan lehetetlen!!"<<endl;
-        }
+//
+//    K.termelo_letrehoz(1, 1, 1, "R");
+//    K.termelo_letrehoz(1, 3, 1, "B");
+//    K.termelo_letrehoz(1, 4, 1, "B");
+//    K.termelo_letrehoz(4, 1, 1, "G");
+//    K.termelo_letrehoz(1, 1, 1, "R");
+//
+//    K.fogyaszto_letrehoz(1, 7, "R", 0, "B", 0, "G", 0, "RB", 4, "RG", 0,"BG", 0,"RGB", 0);
+//    K.fogyaszto_letrehoz(2, 7, "R", 0, "B", 0, "G", 3, "RB", 0, "RG", 0,"BG", 0,"RGB", 0);
+//    K.fogyaszto_letrehoz(7, 8, "R", 0, "B", 0, "G", 0, "RB", 0, "RG", 0,"BG", 0,"RGB", 5);
+//
+//    if(K.check())
+//        {
+//        K.kereses();
+//        K.megjelenit();
+//        }
+//        else
+//        {
+//            K.megjelenit();
+//            cout<<"Trivialisan lehetetlen!!"<<endl;
+//        }
 
     cout << endl;
-//    for (int i = 0; i < 10; i++)
-//    {
-//        K.folyamat_1();
-//
-//        K.folyamat_2();
-//
-//        K.folyamat_3();
-//
-//        K.folyamat_4(i);
-//
-//
-//    K.megjelenit();
-//    }
+    bool nincs_vege=true;
+    int i=0;
 
+    cout<<K.osszes_futoszalag.size()<<endl;
+    while(nincs_vege)
+    {
+        nincs_vege=!K.folyamat_1();
 
+        K.folyamat_2();
+
+        K.folyamat_3();
+
+        K.folyamat_4(i);
+        i++;
+
+    K.megjelenit();
+    }
+
+    cout<< i<< " lepes volt"<<endl;
     return 0;
 }
